@@ -7,7 +7,6 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-from datetime import datetime
 from dateutil import parser
 
 import datetime
@@ -26,14 +25,6 @@ APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 
 def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
@@ -56,26 +47,34 @@ def get_credentials():
 def getDateDif(fromDate, toDate):
     return fromDate - toDate;
 
-def main():
-    """Shows basic usage of the Google Calendar API.
-
-    Creates a Google Calendar API service object and outputs a list of the next
-    10 events on the user's calendar.
-    """
+def getService():
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
-    service = discovery.build('calendar', 'v3', http=http)
+    return discovery.build('calendar', 'v3', http=http)
+
+def getEvents(calendarId):
+    service = getService()
+
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+
+    print('Getting the upcoming 10 events')
+    eventsResult = service.events().list(
+        calendarId=calendarId, timeMin=now, maxResults=10, singleEvents=True,
+        orderBy='startTime').execute()
+
+    return eventsResult.get('items', []) 
+
+def main():
+    service = getService()
 
     nowTime = datetime.datetime.utcnow() 
     now = nowTime.isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
-    eventsResult = service.events().list(
-        calendarId='h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com', timeMin=now, maxResults=10, singleEvents=True,
-        orderBy='startTime').execute()
-    events = eventsResult.get('items', [])
-
+    
+    events = getEvents('h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com')
+    
     if not events:
         print('No upcoming events found.')
+    
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
