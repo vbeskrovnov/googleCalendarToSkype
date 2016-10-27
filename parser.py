@@ -57,12 +57,17 @@ def getEvents(calendarId):
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
 
-    print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
         calendarId=calendarId, timeMin=now, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
 
     return eventsResult.get('items', []) 
+
+def getEventDate(event):
+    return event['start'].get('dateTime', event['start'].get('date'))
+
+def getEventName(event):
+    return event['summary']
 
 def main():
     service = getService()
@@ -76,8 +81,9 @@ def main():
         print('No upcoming events found.')
     
     for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
+        start = getEventDate(event)
+        name = getEventName(event)
+        print(start, name)
         print(getDateDif(parser.parse(start).replace(tzinfo=None), nowTime))
 
 if __name__ == '__main__':
