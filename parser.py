@@ -69,22 +69,34 @@ def getEventDate(event):
 def getEventName(event):
     return event['summary']
 
+def updateEvents(events):
+    result = {}
+    data = {}
+    for event in events:
+        data['name'] = getEventName(event)
+        data['date'] = getEventDate(event)
+        data['notification'] = ['1', '2', '3']
+        result.append(data)
+    print(result)
+    return
+
 def main():
     service = getService()
 
     nowTime = datetime.datetime.utcnow() 
-    now = nowTime.isoformat() + 'Z' # 'Z' indicates UTC time
-    
+        
     events = getEvents('h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com')
     
     if not events:
         print('No upcoming events found.')
     
+    updateEvents(events)
+
     for event in events:
         start = getEventDate(event)
         name = getEventName(event)
         print(start, name)
-        print(getDateDif(parser.parse(start).replace(tzinfo=None), nowTime))
+        print(getDateDif(parser.parse(start).replace(tzinfo=None), nowTime).days)
 
 if __name__ == '__main__':
     main()
