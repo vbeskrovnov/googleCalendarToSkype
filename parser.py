@@ -10,6 +10,7 @@ from oauth2client.file import Storage
 from dateutil import parser
 
 import datetime
+import json
 
 try:
     import argparse
@@ -17,8 +18,6 @@ try:
 except ImportError:
     flags = None
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/calendar-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
@@ -39,13 +38,10 @@ def get_credentials():
         flow.user_agent = APPLICATION_NAME
         if flags:
             credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
+        else:
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
-
-def getDateDif(fromDate, toDate):
-    return fromDate - toDate;
 
 def getService():
     credentials = get_credentials()
@@ -69,34 +65,61 @@ def getEventDate(event):
 def getEventName(event):
     return event['summary']
 
-def updateEvents(events):
-    result = {}
-    data = {}
+def getEventsJson(events): 
+    result = []
     for event in events:
+        data = {}
         data['name'] = getEventName(event)
         data['date'] = getEventDate(event)
-        data['notification'] = ['1', '2', '3']
+        data['notification'] = []
         result.append(data)
-    print(result)
+    return result
+
+def getOldEventsJson(fileName):
+    eventsFile = open(fileName, 'r+')
+    oldEventsStr = eventsFile.read()
+    eventsFile.close()
+    oldEvents = []
+    if oldEventsStr != '':
+    	oldEvents = json.loads(oldEventsStr)
+    return oldEvents
+
+def updateEvents(events, fileName):
+    events = getEventsJson(events)
+
+    oldEvents = getOldEventsJson(fileName)
+    
+    for event in events:
+        if isEventExist(oldEvents, event):
+            event['notification'] = getEvent(oldEvents, event['name'])['notification']
+
+    eventsFile = open(fileName, 'r+')
+    eventsFile.seek(0)
+    eventsFile.truncate()
+    eventsFile.write(json.dumps(events))
+    eventsFile.close()
     return
 
-def main():
-    service = getService()
+def isEventExist(events, event):
+    for oldEvent in events:
+        if oldEvent['name'] == event['name']:
+            return True
+    return False
 
-    nowTime = datetime.datetime.utcnow() 
-        
+def getEvent(events, name):
+    for event in events:
+        if event['name'] == name:
+            return event
+    return None
+
+
+def main():
     events = getEvents('h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com')
     
     if not events:
         print('No upcoming events found.')
     
-    updateEvents(events)
-
-    for event in events:
-        start = getEventDate(event)
-        name = getEventName(event)
-        print(start, name)
-        print(getDateDif(parser.parse(start).replace(tzinfo=None), nowTime).days)
+    updateEvents(events,'events.json')
 
 if __name__ == '__main__':
     main()
