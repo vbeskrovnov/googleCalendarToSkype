@@ -73,10 +73,10 @@ def getEventName(event):
 def getEventsJson(events):
     result = []
     for event in events:
-        data = {}
-        data['name'] = getEventName(event)
-        data['date'] = getEventDate(event)
-        data['notification'] = []
+        data = {
+            'name': getEventName(event),
+            'date': getEventDate(event),
+            'notification': []}
         result.append(data)
     return result
 
@@ -89,6 +89,7 @@ def getEventsFromFile(fileName):
     if oldEventsStr != '':
         oldEvents = json.loads(oldEventsStr)
     return oldEvents
+
 
 def saveEventsToFile(fileName, events):
     eventsFile = open(fileName, 'r+')
@@ -123,16 +124,3 @@ def getEvent(events, name):
         if event['name'] == name:
             return event
     return None
-
-
-def main():
-    events = getEvents('h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com')
-
-    if not events:
-        print('No upcoming events found.')
-
-    updateEvents(events, 'events.json')
-
-
-if __name__ == '__main__':
-    main()
