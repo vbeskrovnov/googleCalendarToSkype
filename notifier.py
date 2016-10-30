@@ -15,21 +15,29 @@ def main():
     
     parser.updateEvents(events,'events.json')
     
-    events = parser.getOldEventsJson('events.json')
+    events = parser.getEventsFromFile('events.json')
     
     for event in events:
-        print(getRemainingTime(event['date']))
+        print(getRemainingTime(event['date']).seconds/60)
         notification = event['notification']
+        name = event['name']
         if 'init' not in notification:
-            skyper.sendMessage(event['name'])
+            skyper.sendMessage(name)
             notification.append('init')     
         if '2day' not in notification and getRemainingTime(event['date']).days == 2:
-            skyper.sendMessage(event['name'] + ' 2 day')
+            skyper.sendMessage(name + ' 2 day')
             notification.append('2day')
         if '1day' not in notification and getRemainingTime(event['date']).days == 1:
-            skyper.sendMessage(event['name'] + ' 1 day')
+            skyper.sendMessage(name + ' 1 day')
             notification.append('1day')
-    print(events)
+        if '2hour' not in notification and getRemainingTime(event['date']).seconds/60/60 == 1:
+            skyper.sendMessage(name + ' 2 hour')
+            notification.append('2hour')
+        if '1hour' not in notification and getRemainingTime(event['date']).seconds/60/60 == 0:
+            skyper.sendMessage(name + ' 1 hour')
+            notification.append('1hour')
+
+    parser.saveEventsToFile('events.json', events)
     
 
 if __name__ == '__main__':
