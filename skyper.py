@@ -1,8 +1,8 @@
-import Skype4Py
+from skpy import Skype
+import properties
 
-skype = Skype4Py.Skype()
-skype.Attach()
+skype = Skype(properties.chat_bot_login, properties.chat_bot_password)
 
 def sendMessage(message):
-    chat = skype.FindChatUsingBlob('ZM_jy6lt7FtGVGlsmkBPhisEaOGaaooqC7xiWqQQC373QSap65IeFDHwejRs3M5jlRjEKMA2VrDfEOT6wCKbLg')
-    chat.SendMessage(message)
+    chat = skype.chats.chat(properties.chat_id)
+    chat.sendMsg(message)

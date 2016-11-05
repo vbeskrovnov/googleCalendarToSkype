@@ -1,6 +1,9 @@
 google_url='h3qa9705p4v3sd7275l4cbjg20@group.calendar.google.com'
+chat_id=''
 events_file_name='events.json'
 date_formatting='%d.%m.%Y, %H:%M'
+chat_bot_login=''
+chat_bot_password=''
 """
 Templates:
 {0} - Event name
